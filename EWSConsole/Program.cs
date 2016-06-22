@@ -12,7 +12,9 @@ namespace EWSConsole
     {
         static void Main(string[] args)
         {
-            ImpersonationSample();
+            //ImpersonationSample();
+            SharedMailboxSample();
+            Console.ReadLine();
         }
 
         static void ImpersonationSample()
@@ -28,13 +30,6 @@ namespace EWSConsole
             service.TraceFlags = TraceFlags.All;
 
             service.AutodiscoverUrl(userName, RedirectionUrlValidationCallback);
-
-            //service.ImpersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, userName);
-
-            //Folder newFolder = new Folder(service);
-            //newFolder.DisplayName = "TestFolder1";
-
-            //newFolder.Save(WellKnownFolderName.Inbox);
 
             service.ImpersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, impersonationUserName);
 
@@ -60,6 +55,30 @@ namespace EWSConsole
                 result = true;
             }
             return result;
+        }
+
+        static void SharedMailboxSample()
+        {
+            string userName = "";
+            string password = "";
+
+            ExchangeService service = new ExchangeService(ExchangeVersion.Exchange2013_SP1);
+            service.Credentials = new NetworkCredential(userName, password);
+
+            service.TraceEnabled = true;
+            service.TraceFlags = TraceFlags.All;
+
+            service.AutodiscoverUrl(userName, RedirectionUrlValidationCallback);
+
+
+            FolderId SharedMailbox = new FolderId(WellKnownFolderName.Inbox, "sharedmailboxFei@O365E3W15.onmicrosoft.com");
+            ItemView itemView = new ItemView(10);
+            var results = service.FindItems(SharedMailbox, itemView);
+            foreach (var item in results)
+            {
+                Console.WriteLine(item.Subject);
+            }
+
         }
 
     }

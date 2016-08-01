@@ -13,8 +13,68 @@ namespace EWSConsole
         static void Main(string[] args)
         {
             //ImpersonationSample();
-            SharedMailboxSample();
+            //SharedMailboxSample();
+           
+            //SendMessage();
+            CreateAppointment();
+            Console.WriteLine("appointment created successuflly!");
+            GetAppointmentException();
             Console.ReadLine();
+        }
+
+        static void GetAppointmentException()
+        {
+            string userName = "";
+            string password = "";
+
+            ExchangeService service = new ExchangeService(ExchangeVersion.Exchange2013_SP1);
+            service.Credentials = new NetworkCredential(userName, password);
+
+            service.TraceEnabled = true;
+            service.TraceFlags = TraceFlags.All;
+
+            service.AutodiscoverUrl(userName, RedirectionUrlValidationCallback);
+
+
+            PropertySet propSet = new PropertySet(AppointmentSchema.Subject,
+                                        AppointmentSchema.Location,
+                                        AppointmentSchema.Start,
+                                        AppointmentSchema.End,
+                                        AppointmentSchema.AppointmentType);
+
+            CalendarView calView = new CalendarView(new DateTime(2016, 7, 27),
+                new DateTime(2016, 8, 2));
+            calView.PropertySet = propSet;
+
+            FindItemsResults<Appointment> results = service.FindAppointments(WellKnownFolderName.Calendar, calView);
+
+            foreach (Appointment appt in results.Items)
+            {
+                Console.WriteLine(appt.Subject);
+            }
+        }
+
+        static void CreateAppointment()
+        {
+            string userName = "";
+            string password = "";
+
+            ExchangeService service = new ExchangeService(ExchangeVersion.Exchange2013_SP1);
+            service.Credentials = new NetworkCredential(userName, password);
+
+            service.TraceEnabled = true;
+            service.TraceFlags = TraceFlags.All;
+
+            service.AutodiscoverUrl(userName, RedirectionUrlValidationCallback);
+
+            Appointment appointment = new Appointment(service);
+
+            appointment.Subject = "Dentist Appointment";
+            appointment.Body = "The appointment is with Dr. Smith.";
+            appointment.Start = new DateTime(2016, 8, 1, 9, 0, 0);
+            appointment.End = appointment.Start.AddHours(2);
+
+            appointment.Save(SendInvitationsMode.SendToNone);
         }
 
         static void ImpersonationSample()
@@ -81,5 +141,25 @@ namespace EWSConsole
 
         }
 
+        static void SendMessage()
+        {
+            string userName = "";
+            string password = "";
+
+            ExchangeService service = new ExchangeService(ExchangeVersion.Exchange2013_SP1);
+            service.Credentials = new NetworkCredential(userName, password);
+
+            service.TraceEnabled = true;
+            service.TraceFlags = TraceFlags.All;
+
+            service.AutodiscoverUrl(userName, RedirectionUrlValidationCallback);
+
+            EmailMessage message = new EmailMessage(service);
+            message.Subject = "Interesting";
+            message.Body = "The proposition has been considered.";
+            message.ToRecipients.Add(userName);
+            message.SendAndSaveCopy();
+
+        }
     }
 }
